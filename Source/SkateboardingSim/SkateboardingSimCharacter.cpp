@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Components/BoxComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -67,6 +68,11 @@ void ASkateboardingSimCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	// Setup obstacle detection
+	UBoxComponent* ObstacleDetector = CreateDefaultSubobject<UBoxComponent>(TEXT("ObstacleDetector"));
+	ObstacleDetector->SetupAttachment(RootComponent);
+	ObstacleDetector->OnComponentBeginOverlap.AddDynamic(this, &ASkateboardingSimCharacter::OnJumpedOverObstacle);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -86,6 +92,13 @@ void ASkateboardingSimCharacter::SetupPlayerInputComponent(UInputComponent* Play
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASkateboardingSimCharacter::Look);
+
+		// Pushing
+		EnhancedInputComponent->BindAction(PushAction, ETriggerEvent::Started, this, &ASkateboardingSimCharacter::Push);
+		EnhancedInputComponent->BindAction(PushAction, ETriggerEvent::Completed, this, &ASkateboardingSimCharacter::StopPush);
+
+		// Slowing Down
+		EnhancedInputComponent->BindAction(SlowDownAction, ETriggerEvent::Started, this, &ASkateboardingSimCharacter::SlowDown);
 	}
 	else
 	{
@@ -127,4 +140,35 @@ void ASkateboardingSimCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void ASkateboardingSimCharacter::Push()
+{
+	GetCharacterMovement()->MaxWalkSpeed = PushedMaxWalkSpeed;
+}
+
+void ASkateboardingSimCharacter::StopPush()
+{
+	GetCharacterMovement()->MaxWalkSpeed = DefaultMaxWalkSpeed;
+}
+
+void ASkateboardingSimCharacter::SlowDown()
+{
+	GetCharacterMovement()->MaxWalkSpeed = SlowDownMaxWalkSpeed;
+}
+
+void ASkateboardingSimCharacter::OnJumpedOverObstacle(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	// Check if the other actor is a jumpable obstacle
+	if (OtherActor && OtherActor != this && OtherComp)
+	{
+		AddPoint();
+	}
+}
+
+void ASkateboardingSimCharacter::AddPoint()
+{
+	Points++;
+	UE_LOG(LogTemplateCharacter, Log, TEXT("Points: %d"), Points);
 }
