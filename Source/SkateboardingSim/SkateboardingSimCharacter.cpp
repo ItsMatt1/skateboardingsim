@@ -51,6 +51,11 @@ ASkateboardingSimCharacter::ASkateboardingSimCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	// Setup obstacle detection
+	ObstacleDetector = CreateDefaultSubobject<UBoxComponent>(TEXT("ObstacleDetector"));
+	ObstacleDetector->SetupAttachment(RootComponent);
+	ObstacleDetector->OnComponentBeginOverlap.AddDynamic(this, &ASkateboardingSimCharacter::OnJumpedOverObstacle);
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
@@ -68,11 +73,6 @@ void ASkateboardingSimCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-
-	// Setup obstacle detection
-	UBoxComponent* ObstacleDetector = CreateDefaultSubobject<UBoxComponent>(TEXT("ObstacleDetector"));
-	ObstacleDetector->SetupAttachment(RootComponent);
-	ObstacleDetector->OnComponentBeginOverlap.AddDynamic(this, &ASkateboardingSimCharacter::OnJumpedOverObstacle);
 }
 
 //////////////////////////////////////////////////////////////////////////
