@@ -82,6 +82,10 @@ public:
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera = nullptr;
+
+	/** A box for obstacle detection */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	class UBoxComponent* ObstacleDetector = nullptr;
 	
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -101,13 +105,23 @@ public:
 
 	/** Push Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* PushAction= nullptr;
+	UInputAction* PushAction = nullptr;
 
 	/** Slow Down Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* SlowDownAction = nullptr;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsIdle = true;
 
-	class UBoxComponent* ObstacleDetector = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsWalking = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsJumping = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsSkating = false;
 
 private:
 	/** Current points of the character. */
