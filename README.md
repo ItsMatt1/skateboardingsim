@@ -1,4 +1,4 @@
-# Skateboarding Simulator Game
+# SK8 World
 
 Welcome to the Skateboarding Simulator Game! This prototype is created as part of an interview task. The game is developed using Unreal Engine 5.3 and features full control of a character skateboarding in a small designed park or street side.
 
@@ -14,11 +14,18 @@ Welcome to the Skateboarding Simulator Game! This prototype is created as part o
 
 ## Controls
 W: Move forward
+
 S: Move backward
+
 A: Turn left
+
 D: Turn right
+
 Space: Jump
+
 Shift: Speed up
+
 Ctrl: Slow down
 
-We hope you enjoy playing the Skateboarding Simulator Game! Your feedback is welcome and appreciated.
+
+## We hope you enjoy playing the Skateboarding Simulator Game! Your feedback is welcome and appreciated.
