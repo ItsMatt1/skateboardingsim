@@ -28,8 +28,8 @@ ASkateboardingSimCharacter::ASkateboardingSimCharacter()
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
+	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input.
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // at this rotation rate
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
@@ -48,13 +48,17 @@ ASkateboardingSimCharacter::ASkateboardingSimCharacter()
 
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the 
+	// and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	// Setup obstacle detection
 	ObstacleDetector = CreateDefaultSubobject<UBoxComponent>(TEXT("ObstacleDetector"));
 	ObstacleDetector->SetupAttachment(RootComponent);
 	ObstacleDetector->OnComponentBeginOverlap.AddDynamic(this, &ASkateboardingSimCharacter::OnJumpedOverObstacle);
+
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 180.0f, 0.0f); // Slower turning rate for smooth curves
+	GetCharacterMovement()->GroundFriction = 0.2f; // Low friction for sliding effect
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
@@ -68,11 +72,17 @@ void ASkateboardingSimCharacter::BeginPlay()
 	//Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+			ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+}
+
+void ASkateboardingSimCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -88,21 +98,31 @@ void ASkateboardingSimCharacter::SetupPlayerInputComponent(UInputComponent* Play
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		// Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASkateboardingSimCharacter::Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this,
+			&ASkateboardingSimCharacter::Move);
 
 		// Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASkateboardingSimCharacter::Look);
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this,
+			&ASkateboardingSimCharacter::Look);
 
 		// Pushing
-		EnhancedInputComponent->BindAction(PushAction, ETriggerEvent::Started, this, &ASkateboardingSimCharacter::Push);
-		EnhancedInputComponent->BindAction(PushAction, ETriggerEvent::Completed, this, &ASkateboardingSimCharacter::StopPush);
+		EnhancedInputComponent->BindAction(PushAction, ETriggerEvent::Started, this,
+			&ASkateboardingSimCharacter::Push);
+		EnhancedInputComponent->BindAction(PushAction, ETriggerEvent::Completed, this,
+			&ASkateboardingSimCharacter::ReturnNormalSpeed);
 
 		// Slowing Down
-		EnhancedInputComponent->BindAction(SlowDownAction, ETriggerEvent::Started, this, &ASkateboardingSimCharacter::SlowDown);
+		EnhancedInputComponent->BindAction(SlowDownAction, ETriggerEvent::Started, this,
+			&ASkateboardingSimCharacter::SlowDown);
+		EnhancedInputComponent->BindAction(SlowDownAction, ETriggerEvent::Completed, this,
+			&ASkateboardingSimCharacter::ReturnNormalSpeed);
 	}
 	else
 	{
-		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+		UE_LOG(LogTemplateCharacter, Error,
+			TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input "
+			"system. If you intend to use the legacy system, then you will need to update this C++ file."),
+			*GetNameSafe(this));
 	}
 }
 
@@ -147,7 +167,7 @@ void ASkateboardingSimCharacter::Push()
 	GetCharacterMovement()->MaxWalkSpeed = PushedMaxWalkSpeed;
 }
 
-void ASkateboardingSimCharacter::StopPush()
+void ASkateboardingSimCharacter::ReturnNormalSpeed()
 {
 	GetCharacterMovement()->MaxWalkSpeed = DefaultMaxWalkSpeed;
 }

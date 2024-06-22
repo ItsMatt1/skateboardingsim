@@ -54,6 +54,8 @@ protected:
 	
 	/** Called when the game starts or when spawned. */
 	virtual void BeginPlay();
+	
+	virtual void Tick(float DeltaTime);
 
 private:
 	/** Called for movement input */
@@ -66,10 +68,13 @@ private:
 	void Push();
 
 	/** Handles the stop push action, resetting to default speed */
-	void StopPush();
+	void ReturnNormalSpeed();
 
 	/** Handles the slow down action, decreasing speed. */
 	void SlowDown();
+
+	/** Handles the stop push action, resetting to default speed */
+	void StopSlowDown();
 	
 	/** Adds a point to the character's score. */
 	void AddPoint();
