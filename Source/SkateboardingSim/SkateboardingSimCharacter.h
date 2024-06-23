@@ -82,6 +82,7 @@ private:
 	void SkateJump();
 
 	void SkateStopJumping();
+	void Landed(const FHitResult& Hit);
 
 public:
 	/** Camera boom positioning the camera behind the character */
@@ -130,7 +131,7 @@ public:
 	bool bIsJumping = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool bIsSkating = false;
+	bool bIsSkating = true;
 
 private:
 	/** Current points of the character. */

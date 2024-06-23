@@ -6,6 +6,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "TimerManager.h"
 #include "GameFramework/Controller.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -94,8 +95,10 @@ void ASkateboardingSimCharacter::SetupPlayerInputComponent(UInputComponent* Play
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 		
 		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this,
+			&ASkateboardingSimCharacter::SkateJump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this,
+			&ASkateboardingSimCharacter::SkateStopJumping);
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this,
@@ -196,11 +199,22 @@ void ASkateboardingSimCharacter::AddPoint()
 void ASkateboardingSimCharacter::SkateJump()
 {
 	bIsJumping = true;
+	bIsSkating = false;
 	Jump();
 }
 
 void ASkateboardingSimCharacter::SkateStopJumping()
 {
 	bIsJumping = false;
+	bIsSkating = true;
 	StopJumping();
+}
+
+
+void ASkateboardingSimCharacter::Landed(const FHitResult& Hit)
+{
+	Super::Landed(Hit);
+
+	// Call the function to reset states after landing
+	OnLanded();
 }
