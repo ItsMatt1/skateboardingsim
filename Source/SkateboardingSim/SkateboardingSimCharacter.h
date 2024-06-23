@@ -79,6 +79,10 @@ private:
 	/** Adds a point to the character's score. */
 	void AddPoint();
 
+	void SkateJump();
+
+	void SkateStopJumping();
+
 public:
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))

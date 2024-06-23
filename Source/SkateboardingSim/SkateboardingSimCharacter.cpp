@@ -192,3 +192,15 @@ void ASkateboardingSimCharacter::AddPoint()
 	Points++;
 	UE_LOG(LogTemplateCharacter, Log, TEXT("Points: %d"), Points);
 }
+
+void ASkateboardingSimCharacter::SkateJump()
+{
+	bIsJumping = true;
+	Jump();
+}
+
+void ASkateboardingSimCharacter::SkateStopJumping()
+{
+	bIsJumping = false;
+	StopJumping();
+}
