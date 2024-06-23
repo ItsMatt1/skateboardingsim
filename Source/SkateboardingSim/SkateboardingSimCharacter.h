@@ -79,10 +79,23 @@ private:
 	/** Adds a point to the character's score. */
 	void AddPoint();
 
+	/** Initiates the jump action if the character is on the ground */
 	void SkateJump();
 
+	/** Handles the stop jumping action */
 	void SkateStopJumping();
-	void Landed(const FHitResult& Hit);
+
+	/** 
+	* Called when the character lands on the ground
+	* 
+	* @param Hit The hit result from the landing 
+	*/
+	virtual void Landed(const FHitResult& Hit) override;
+
+	/** 
+	* Handles additional logic after the character lands 
+	*/
+	void OnLanded();
 
 public:
 	/** Camera boom positioning the camera behind the character */

@@ -198,23 +198,33 @@ void ASkateboardingSimCharacter::AddPoint()
 
 void ASkateboardingSimCharacter::SkateJump()
 {
-	bIsJumping = true;
-	bIsSkating = false;
-	Jump();
+	// Only jump if character is on the ground
+	if (GetCharacterMovement()->IsMovingOnGround())
+	{
+		bIsJumping = true;
+		bIsSkating = false;
+		Jump();
+	}
 }
 
 void ASkateboardingSimCharacter::SkateStopJumping()
 {
-	bIsJumping = false;
-	bIsSkating = true;
-	StopJumping();
+	// Nothing needed here since OnLanded will handle it
 }
-
 
 void ASkateboardingSimCharacter::Landed(const FHitResult& Hit)
 {
 	Super::Landed(Hit);
 
+	UE_LOG(LogTemp, Error, TEXT("Landed"));
+
 	// Call the function to reset states after landing
 	OnLanded();
+}
+
+void ASkateboardingSimCharacter::OnLanded()
+{
+	bIsJumping = false;
+	bIsSkating = true;
+	StopJumping();
 }
