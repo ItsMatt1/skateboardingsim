@@ -20,20 +20,20 @@ class ASkateboardingSimCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-public:
-	/**
-	* Called when the character jumps over an obstacle.
-	* 
-	* @param OverlappedComponent The component that triggered the overlap.
-	* @param OtherActor The other actor involved in the overlap.
-	* @param OtherComp The other component involved in the overlap.
-	* @param OtherBodyIndex The index of the other body.
-	* @param bFromSweep Whether the overlap was caused by a sweep.
-	* @param SweepResult The result of the sweep.
-	*/
-	UFUNCTION()
-	void OnJumpedOverObstacle(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+// public:
+// 	/**
+// 	* Called when the character jumps over an obstacle.
+// 	* 
+// 	* @param OverlappedComponent The component that triggered the overlap.
+// 	* @param OtherActor The other actor involved in the overlap.
+// 	* @param OtherComp The other component involved in the overlap.
+// 	* @param OtherBodyIndex The index of the other body.
+// 	* @param bFromSweep Whether the overlap was caused by a sweep.
+// 	* @param SweepResult The result of the sweep.
+// 	*/
+// 	UFUNCTION()
+// 	void OnJumpedOverObstacle(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+// 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 public:
 	/* Default Constructor */
@@ -133,18 +133,28 @@ public:
 	/** Slow Down Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* SlowDownAction = nullptr;
-	
+
+	/* Bool to keep track of states for animation purposes */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bIsIdle = true;
 
+	/* Bool to keep track of states for animation purposes */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bIsWalking = false;
 
+	/* Bool to keep track of states for animation purposes */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bIsJumping = false;
 
+	/* Bool to keep track of states for animation purposes */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bIsSkating = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsOverObstacle = false;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Detection", meta = (AllowPrivateAccess = "true"))
+	UBoxComponent* JumpDetectionBox = nullptr;
 
 private:
 	/** Current points of the character. */

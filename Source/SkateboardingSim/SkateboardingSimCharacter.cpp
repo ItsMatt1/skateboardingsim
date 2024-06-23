@@ -8,6 +8,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "TimerManager.h"
 #include "GameFramework/Controller.h"
+#include "GameFramework/Actor.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
@@ -38,8 +39,9 @@ ASkateboardingSimCharacter::ASkateboardingSimCharacter()
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
-	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
-	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
+
+	GetCharacterMovement()->BrakingDecelerationWalking = 150.0f;
+	GetCharacterMovement()->BrakingDecelerationFalling = 150.0f;
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -53,13 +55,14 @@ ASkateboardingSimCharacter::ASkateboardingSimCharacter()
 	// and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	// Setup obstacle detection
-	ObstacleDetector = CreateDefaultSubobject<UBoxComponent>(TEXT("ObstacleDetector"));
-	ObstacleDetector->SetupAttachment(RootComponent);
-	ObstacleDetector->OnComponentBeginOverlap.AddDynamic(this, &ASkateboardingSimCharacter::OnJumpedOverObstacle);
-
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 180.0f, 0.0f); // Slower turning rate for smooth curves
 	GetCharacterMovement()->GroundFriction = 0.2f; // Low friction for sliding effect
+
+	// Create a box component for detecting jump over obstacles
+	JumpDetectionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("JumpDetectionBox"));
+	JumpDetectionBox->SetupAttachment(RootComponent);
+	JumpDetectionBox->SetBoxExtent(FVector(50.0f, 50.0f, 50.0f));
+	JumpDetectionBox->SetCollisionProfileName(TEXT("NoCollision"));
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
@@ -84,6 +87,32 @@ void ASkateboardingSimCharacter::BeginPlay()
 void ASkateboardingSimCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (bIsJumping)
+	{
+		// Perform line trace
+		FVector Start = JumpDetectionBox->GetComponentLocation();
+		FVector End = Start - FVector(0, 0, 100.0f); // Trace downwards
+
+		FHitResult HitResult;
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(this);
+
+		GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, Params);
+
+		if (HitResult.GetActor() != nullptr && HitResult.GetActor()->ActorHasTag(TEXT("Obstacle")))
+		{
+			if (!bIsOverObstacle)
+			{
+				AddPoint();
+				bIsOverObstacle = true;
+			}
+		}
+		else
+		{
+			bIsOverObstacle = false;
+		}
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -168,6 +197,7 @@ void ASkateboardingSimCharacter::Look(const FInputActionValue& Value)
 void ASkateboardingSimCharacter::Push()
 {
 	GetCharacterMovement()->MaxWalkSpeed = PushedMaxWalkSpeed;
+	GetCharacterMovement()->BrakingDecelerationWalking = 150.f;
 }
 
 void ASkateboardingSimCharacter::ReturnNormalSpeed()
@@ -178,16 +208,7 @@ void ASkateboardingSimCharacter::ReturnNormalSpeed()
 void ASkateboardingSimCharacter::SlowDown()
 {
 	GetCharacterMovement()->MaxWalkSpeed = SlowDownMaxWalkSpeed;
-}
-
-void ASkateboardingSimCharacter::OnJumpedOverObstacle(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	// Check if the other actor is a jumpable obstacle
-	if (OtherActor && OtherActor != this && OtherComp)
-	{
-		AddPoint();
-	}
+	GetCharacterMovement()->BrakingDecelerationWalking = 1500.f;
 }
 
 void ASkateboardingSimCharacter::AddPoint()
@@ -220,6 +241,9 @@ void ASkateboardingSimCharacter::Landed(const FHitResult& Hit)
 
 	// Call the function to reset states after landing
 	OnLanded();
+
+	// Reset the detection state
+	bIsOverObstacle = false;
 }
 
 void ASkateboardingSimCharacter::OnLanded()
