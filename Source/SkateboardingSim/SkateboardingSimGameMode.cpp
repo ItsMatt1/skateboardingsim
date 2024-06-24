@@ -35,10 +35,10 @@ void ASkateboardingSimGameMode::DecrementTimer()
 	}
 	else
 	{
-		// Para o timer quando chegar a zero
+		// Stops timer when reaches 0
 		GetWorldTimerManager().ClearTimer(TimerHandle);
 
-		// Carrega o novo mapa
+		// Load menu
 		if (!EndMapName.IsNone())
 		{
 			UGameplayStatics::OpenLevel(this, EndMapName);

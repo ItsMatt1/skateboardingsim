@@ -16,6 +16,33 @@ UCLASS(minimalapi)
 class ASkateboardingSimGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
+	
+public:
+	/**
+	* @brief Gets the current timer seconds.
+	* 
+	* This function returns the current value of the TimerSeconds variable.
+	* 
+	* @return The current timer seconds as an integer.
+	*/
+	UFUNCTION(BlueprintCallable, Category="Timer")
+	int32 GetTimerSeconds() const
+	{
+		return TimerSeconds;
+	}
+
+	/**
+	* @brief Sets the timer seconds.
+	* 
+	* This function sets a new value for the TimerSeconds variable.
+	* 
+	* @param NewTimerSeconds The new timer seconds value as an integer.
+	*/
+	UFUNCTION(BlueprintCallable, Category="Timer")
+	inline void SetTimerSeconds(int32 NewTimerSeconds)
+	{
+		TimerSeconds = NewTimerSeconds;
+	}
 
 public:
 	/**
@@ -48,33 +75,6 @@ public:
 	* @param MapName The name of the map to load.
 	*/
 	void SetEndMapName(FName MapName);
-
-public:
-	/**
-	* @brief Gets the current timer seconds.
-	* 
-	* This function returns the current value of the TimerSeconds variable.
-	* 
-	* @return The current timer seconds as an integer.
-	*/
-	UFUNCTION(BlueprintCallable, Category="Timer")
-	int32 GetTimerSeconds() const
-	{
-		return TimerSeconds;
-	}
-
-	/**
-	* @brief Sets the timer seconds.
-	* 
-	* This function sets a new value for the TimerSeconds variable.
-	* 
-	* @param NewTimerSeconds The new timer seconds value as an integer.
-	*/
-	UFUNCTION(BlueprintCallable, Category="Timer")
-	inline void SetTimerSeconds(int32 NewTimerSeconds)
-	{
-		TimerSeconds = NewTimerSeconds;
-	}
 
 private:
 	/** The timer seconds. Default value is 120.0f. */
