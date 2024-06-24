@@ -15,25 +15,43 @@ struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
+/**
+* @brief Game mode class for the Skateboarding Simulator.
+* 
+* This class defines the game mode for the Skateboarding Simulator, including
+* a timer mechanism and a points system with getter and setter functions accessible via Blueprints.
+*/
 UCLASS(config=Game)
 class ASkateboardingSimCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-// public:
-// 	/**
-// 	* Called when the character jumps over an obstacle.
-// 	* 
-// 	* @param OverlappedComponent The component that triggered the overlap.
-// 	* @param OtherActor The other actor involved in the overlap.
-// 	* @param OtherComp The other component involved in the overlap.
-// 	* @param OtherBodyIndex The index of the other body.
-// 	* @param bFromSweep Whether the overlap was caused by a sweep.
-// 	* @param SweepResult The result of the sweep.
-// 	*/
-// 	UFUNCTION()
-// 	void OnJumpedOverObstacle(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-// 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+public:
+	/**
+	* @brief Gets the current points of the character.
+	* 
+	* This function returns the current value of the Points variable.
+	* 
+	* @return The current points as an integer.
+	*/
+	UFUNCTION(BlueprintCallable, Category="Points")
+	int32 GetPoints() const
+	{
+		return Points;
+	}
+
+	/**
+	* @brief Sets the points of the character.
+	* 
+	* This function sets a new value for the Points variable.
+	* 
+	* @param NewPoints The new points value as an integer.
+	*/
+	UFUNCTION(BlueprintCallable, Category="Points")
+	inline void SetPoints(int32 NewPoints)
+	{
+		Points = NewPoints;
+	}
 	
 public:
 	/* Default Constructor */
@@ -92,9 +110,7 @@ private:
 	*/
 	virtual void Landed(const FHitResult& Hit) override;
 
-	/** 
-	* Handles additional logic after the character lands 
-	*/
+	/** Handles additional logic after the character lands */
 	void OnLanded();
 
 public:
