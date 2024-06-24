@@ -6,7 +6,6 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "DrawDebugHelpers.h"
 #include "TimerManager.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/Actor.h"
@@ -14,6 +13,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Components/BoxComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -193,6 +193,12 @@ void ASkateboardingSimCharacter::AddPoint()
 {
 	Points += 100;
 	UE_LOG(LogTemplateCharacter, Log, TEXT("Points: %d"), Points);
+
+	// Play the point sound at the character's location
+	if (PointSound != nullptr)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, PointSound, GetActorLocation());
+	}
 }
 
 void ASkateboardingSimCharacter::SkateJump()

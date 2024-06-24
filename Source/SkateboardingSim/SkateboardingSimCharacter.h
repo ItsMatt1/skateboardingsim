@@ -182,6 +182,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Detection", meta = (AllowPrivateAccess = "true"))
 	UBoxComponent* JumpDetectionBox = nullptr;
 
+	/** A sound for when a obstacle is jumped over. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundBase* PointSound = nullptr;
+
 private:
 	/** Current points of the character. */
 	int32 Points = 0;
