@@ -12,6 +12,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Components/AudioComponent.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -65,6 +66,11 @@ ASkateboardingSimCharacter::ASkateboardingSimCharacter()
 	JumpDetectionBox->SetupAttachment(RootComponent);
 	JumpDetectionBox->SetBoxExtent(FVector(50.0f, 50.0f, 50.0f));
 	JumpDetectionBox->SetCollisionProfileName(TEXT("NoCollision"));
+
+	// Initialize the rolling audio component
+	RollingAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("RollingAudioComponent"));
+	RollingAudioComponent->SetupAttachment(RootComponent);
+	RollingAudioComponent->bAutoActivate = false; // Don't start playing automatically
 }
 
 void ASkateboardingSimCharacter::BeginPlay()
@@ -90,6 +96,31 @@ void ASkateboardingSimCharacter::Tick(float DeltaTime)
 	if (bIsJumping)
 	{
 		CheckForObstacle();
+	}
+
+	float VelocitySize = GetVelocity().Size();
+
+	// Check if the character is moving
+	if (VelocitySize > 0.0f)
+	{
+		// Play the rolling sound if it's not already playing
+		if (!RollingAudioComponent->IsPlaying() && RollingSound)
+		{
+			RollingAudioComponent->SetSound(RollingSound);
+			RollingAudioComponent->Play();
+		}
+		else if (RollingAudioComponent->IsPlaying())
+		{
+			// Adjust the volume based on the velocity
+			// Adjust 500.0f to match MaxWalkSpeed
+			float NewVolume = FMath::Clamp(VelocitySize / 500.0f, 0.0f, 1.0f);
+			RollingAudioComponent->SetVolumeMultiplier(NewVolume);
+		}
+	}
+	else
+	{
+		// Fade out the rolling sound if the character stops moving
+		FadeOutRollingSound(DeltaTime);
 	}
 }
 
@@ -209,6 +240,18 @@ void ASkateboardingSimCharacter::SkateJump()
 		Jump();
 		bIsJumping = true;
 		bIsSkating = false;
+
+		// Play the jump sound
+		if (JumpSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, JumpSound, GetActorLocation());
+		}
+
+		// Stop the rolling sound
+		if (RollingAudioComponent && RollingAudioComponent->IsPlaying())
+		{
+			RollingAudioComponent->Stop();
+		}
 	}
 }
 
@@ -235,6 +278,13 @@ void ASkateboardingSimCharacter::OnLanded()
 	StopJumping();
 	bIsJumping = false;
 	bIsSkating = true;
+
+	// Resume the rolling sound if the character is moving
+	if (GetVelocity().Size() > 0.0f && RollingSound)
+	{
+		RollingAudioComponent->SetSound(RollingSound);
+		RollingAudioComponent->Play();
+	}
 }
 
 void ASkateboardingSimCharacter::CheckForObstacle()
@@ -261,5 +311,26 @@ void ASkateboardingSimCharacter::CheckForObstacle()
 	else
 	{
 		bIsOverObstacle = false;
+	}
+}
+
+void ASkateboardingSimCharacter::FadeOutRollingSound(float DeltaTime)
+{
+	if (RollingAudioComponent && RollingAudioComponent->IsPlaying())
+	{
+		// Gradually reduce the volume
+		float CurrentVolume = RollingAudioComponent->VolumeMultiplier;
+		// Adjust 1.0f to control the fade-out speed
+		float NewVolume = FMath::FInterpTo(CurrentVolume, 0.0f, DeltaTime, 1.0f);
+		RollingAudioComponent->SetVolumeMultiplier(NewVolume);
+
+		// Stop the sound completely if volume is close to zero
+		if (NewVolume <= KINDA_SMALL_NUMBER)
+		{
+			RollingAudioComponent->Stop();
+			
+			// Reset volume for the next play
+			RollingAudioComponent->SetVolumeMultiplier(1.0f);
+		}
 	}
 }

@@ -101,7 +101,16 @@ private:
 	* @note This function is called during Tick when the character is jumping.
 	*/
 	void CheckForObstacle();
-	
+
+	/**
+	* Fades out the rolling sound over time until it stops completely.
+	* This function reduces the volume of the RollingAudioComponent gradually
+	* when the character is slowing down or has stopped moving.
+	*
+	* @param DeltaTime The time since the last tick.
+	*/
+	void FadeOutRollingSound(float DeltaTime);
+
 	/** Adds a point to the character's score. */
 	void AddPoint();
 
@@ -185,6 +194,26 @@ public:
 	/** A sound for when a obstacle is jumped over. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	USoundBase* PointSound = nullptr;
+
+	/** A sound for the player is moving. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundBase* RollingSound = nullptr;
+
+	/**
+	* Component for playing the skate sound effect.
+	* This component is initialized in the constructor and attached to the root component.
+	* It is used to provide continuous audio feedback while the character is skating.
+	*/
+	UPROPERTY()
+	UAudioComponent* RollingAudioComponent;
+
+	/**
+	* Sound to play when the character performs a jump.
+	* This sound is triggered in the SkateJump function if the character is on the ground.
+	* The sound asset should be set in the Unreal Editor.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
+	USoundBase* JumpSound;
 
 private:
 	/** Current points of the character. */
