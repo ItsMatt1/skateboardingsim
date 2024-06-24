@@ -6,6 +6,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "DrawDebugHelpers.h"
 #include "TimerManager.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/Actor.h"
@@ -92,13 +93,28 @@ void ASkateboardingSimCharacter::Tick(float DeltaTime)
 	{
 		// Perform line trace
 		FVector Start = JumpDetectionBox->GetComponentLocation();
-		FVector End = Start - FVector(0, 0, 100.0f); // Trace downwards
+		FVector End = Start - FVector(0, 0, 2000.0f); // Trace downwards
 
 		FHitResult HitResult;
 		FCollisionQueryParams Params;
 		Params.AddIgnoredActor(this);
 
 		GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, Params);
+
+		// Draw debug line
+		DrawDebugLine(
+			GetWorld(),
+			Start,
+			End,
+			FColor::Green, // Color of the line
+			false, // Persistent (will not disappear after a short duration)
+			-1.0f, // Lifetime (-1 means it will last forever)
+			0, // Depth priority
+			1.0f // Thickness of the line
+		);
+		
+		if (HitResult.GetActor() != nullptr)
+			UE_LOG(LogTemp, Warning, TEXT("%s"), *HitResult.GetActor()->GetName());
 
 		if (HitResult.GetActor() != nullptr && HitResult.GetActor()->ActorHasTag(TEXT("Obstacle")))
 		{
