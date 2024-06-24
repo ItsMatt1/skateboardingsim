@@ -91,8 +91,16 @@ private:
 	/** Handles the slow down action, decreasing speed. */
 	void SlowDown();
 
-	/** Handles the stop push action, resetting to default speed */
-	void StopSlowDown();
+	/**
+	* Checks if the character is currently over an obstacle.
+	* 
+	* This function performs a line trace downwards from the JumpDetectionBox's location.
+	* If an obstacle is detected, it increments the score by calling AddPoint().
+	* The state of whether the character is over an obstacle is updated accordingly.
+	* 
+	* @note This function is called during Tick when the character is jumping.
+	*/
+	void CheckForObstacle();
 	
 	/** Adds a point to the character's score. */
 	void AddPoint();
@@ -103,15 +111,15 @@ private:
 	/** Handles the stop jumping action */
 	void SkateStopJumping();
 
+	/** Handles additional logic after the character lands */
+	void OnLanded();
+
 	/** 
 	* Called when the character lands on the ground
 	* 
 	* @param Hit The hit result from the landing 
 	*/
 	virtual void Landed(const FHitResult& Hit) override;
-
-	/** Handles additional logic after the character lands */
-	void OnLanded();
 
 public:
 	/** Camera boom positioning the camera behind the character */
@@ -166,9 +174,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bIsSkating = true;
 
+	/** Bool to keep track of whether the character is currently over an obstacle. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bIsOverObstacle = false;
-	
+
+	/** Box component used for detecting jumps over obstacles. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Detection", meta = (AllowPrivateAccess = "true"))
 	UBoxComponent* JumpDetectionBox = nullptr;
 

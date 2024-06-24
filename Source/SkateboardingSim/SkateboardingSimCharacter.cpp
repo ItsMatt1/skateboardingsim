@@ -30,20 +30,23 @@ ASkateboardingSimCharacter::ASkateboardingSimCharacter()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input.
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // at this rotation rate
-
-	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
-	// instead of recompiling to adjust them
+	// Character moves in the direction of input.
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	
+	// Slower turning rate for smooth curves
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 180.0f, 0.0f);
 	GetCharacterMovement()->JumpZVelocity = 700.f;
-	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 
+	// Skate Physics
+	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 150.0f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 150.0f;
-
+	
+	// Low friction for sliding effect
+	GetCharacterMovement()->GroundFriction = 0.2f;
+	
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -56,17 +59,12 @@ ASkateboardingSimCharacter::ASkateboardingSimCharacter()
 	// and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 180.0f, 0.0f); // Slower turning rate for smooth curves
-	GetCharacterMovement()->GroundFriction = 0.2f; // Low friction for sliding effect
 
 	// Create a box component for detecting jump over obstacles
 	JumpDetectionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("JumpDetectionBox"));
 	JumpDetectionBox->SetupAttachment(RootComponent);
 	JumpDetectionBox->SetBoxExtent(FVector(50.0f, 50.0f, 50.0f));
 	JumpDetectionBox->SetCollisionProfileName(TEXT("NoCollision"));
-
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
 void ASkateboardingSimCharacter::BeginPlay()
@@ -91,43 +89,7 @@ void ASkateboardingSimCharacter::Tick(float DeltaTime)
 
 	if (bIsJumping)
 	{
-		// Perform line trace
-		FVector Start = JumpDetectionBox->GetComponentLocation();
-		FVector End = Start - FVector(0, 0, 2000.0f); // Trace downwards
-
-		FHitResult HitResult;
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(this);
-
-		GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, Params);
-
-		// Draw debug line
-		DrawDebugLine(
-			GetWorld(),
-			Start,
-			End,
-			FColor::Green, // Color of the line
-			false, // Persistent (will not disappear after a short duration)
-			-1.0f, // Lifetime (-1 means it will last forever)
-			0, // Depth priority
-			1.0f // Thickness of the line
-		);
-		
-		if (HitResult.GetActor() != nullptr)
-			UE_LOG(LogTemp, Warning, TEXT("%s"), *HitResult.GetActor()->GetName());
-
-		if (HitResult.GetActor() != nullptr && HitResult.GetActor()->ActorHasTag(TEXT("Obstacle")))
-		{
-			if (!bIsOverObstacle)
-			{
-				AddPoint();
-				bIsOverObstacle = true;
-			}
-		}
-		else
-		{
-			bIsOverObstacle = false;
-		}
+		CheckForObstacle();
 	}
 }
 
@@ -238,9 +200,9 @@ void ASkateboardingSimCharacter::SkateJump()
 	// Only jump if character is on the ground
 	if (GetCharacterMovement()->IsMovingOnGround())
 	{
+		Jump();
 		bIsJumping = true;
 		bIsSkating = false;
-		Jump();
 	}
 }
 
@@ -264,7 +226,34 @@ void ASkateboardingSimCharacter::Landed(const FHitResult& Hit)
 
 void ASkateboardingSimCharacter::OnLanded()
 {
+	StopJumping();
 	bIsJumping = false;
 	bIsSkating = true;
-	StopJumping();
+}
+
+void ASkateboardingSimCharacter::CheckForObstacle()
+{
+	FVector Start = JumpDetectionBox->GetComponentLocation();
+	
+	// Trace downwards
+	FVector End = Start - FVector(0, 0, 2000.0f);
+
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, Params);
+	
+	if (bHit && HitResult.GetActor() && HitResult.GetActor()->ActorHasTag(TEXT("Obstacle")))
+	{
+		if (!bIsOverObstacle)
+		{
+			AddPoint();
+			bIsOverObstacle = true;
+		}
+	}
+	else
+	{
+		bIsOverObstacle = false;
+	}
 }

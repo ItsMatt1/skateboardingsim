@@ -24,11 +24,29 @@ public:
 	* Initializes the game mode with default settings.
 	*/
 	ASkateboardingSimGameMode();
+
+	/** Called when the game starts or when spawned. */
 	void BeginPlay();
 
+	/**
+	* Starts the timer decrement process.
+	* 
+	* Sets a repeating timer that calls DecrementTimer() every second.
+	*/
 	void StartTimerDecrement();
-	
+
+	/**
+	* Decrements the timer every second.
+	* 
+	* If the timer reaches zero, stops the timer and loads a new map if EndMapName is set.
+	*/
 	void DecrementTimer();
+
+	/**
+	* Sets the name of the map to load when the timer reaches zero.
+	* 
+	* @param MapName The name of the map to load.
+	*/
 	void SetEndMapName(FName MapName);
 
 public:
