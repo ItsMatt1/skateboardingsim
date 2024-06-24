@@ -229,7 +229,7 @@ void ASkateboardingSimCharacter::SlowDown()
 
 void ASkateboardingSimCharacter::AddPoint()
 {
-	Points++;
+	Points += 100;
 	UE_LOG(LogTemplateCharacter, Log, TEXT("Points: %d"), Points);
 }
 
