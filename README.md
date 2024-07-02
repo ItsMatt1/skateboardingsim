@@ -27,5 +27,6 @@ Shift: Speed up
 
 Ctrl: Slow down
 
+You have two minutes do make as many points as you can!
 
-## We hope you enjoy playing the Skateboarding Simulator Game! Your feedback is welcome and appreciated.
+## I hope you enjoy playing the Skateboarding Simulator Game! Your feedback is welcome and appreciated.
